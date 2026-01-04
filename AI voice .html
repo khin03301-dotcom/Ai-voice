@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myanmar AI Voice Over</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <header class="flex items-center gap-4 mb-8">
+            <div class="bg-indigo-600 p-3 rounded-2xl shadow-xl shadow-indigo-200">
+                <i data-lucide="volume-2" class="text-white w-7 h-7"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Myanmar AI Voice Over</h1>
+                <p class="text-slate-500 text-sm">အသံမြန်နှုန်းကို စိတ်ကြိုက်ချိန်ညှိနိုင်သော စနစ် (HTML Version)</p>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Main Input Area -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative">
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm font-semibold text-slate-700">စာသားရိုက်ထည့်ပါ</label>
+                        <span id="charCount" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-500 transition-colors">
+                            0 / 1500
+                        </span>
+                    </div>
+                    <textarea id="textInput" 
+                        class="w-full h-48 p-4 rounded-2xl border border-slate-200 outline-none transition-all resize-none text-lg leading-relaxed focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+                        placeholder="ဒီမှာ မြန်မာလို ရိုက်ထည့်ပါ..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">အသံရွေးချယ်ပါ</label>
+                        <select id="voiceSelect" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer">
+                            <option value="Kore">Kore (အမျိုးသမီးသံ - နွေးထွေးသည်)</option>
+                            <option value="Zephyr">Zephyr (အမျိုးသားသံ - ပြတ်သားသည်)</option>
+                            <option value="Puck">Puck (အမျိုးသားသံ - တက်ကြွသည်)</option>
+                            <option value="Charon">Charon (အမျိုးသားသံ - တည်ငြိမ်သည်)</option>
+                            <option value="Leda">Leda (အမျိုးသမီးသံ - သာယာသည်)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="generateBtn" class="w-full py-3.5 px-6 rounded-xl font-bold flex items-center justify-center gap-2 bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-lg shadow-indigo-100 transition-all">
+                            <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                            <span>အသံဖန်တီးမည်</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="hidden p-3 mb-4 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <!-- Result Box -->
+                <div id="resultBox" class="hidden bg-indigo-50 rounded-2xl p-5 border border-indigo-100 animate-fade-in">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-indigo-600"></i>
+                            <span class="text-indigo-800 text-xs font-bold uppercase tracking-wider">အသံဖိုင် အဆင်သင့်ဖြစ်ပါပြီ</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-lg border border-indigo-100 shadow-sm">
+                                <i data-lucide="gauge" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                <select id="speedSelect" class="text-xs font-bold text-slate-600 bg-transparent outline-none cursor-pointer">
+                                    <option value="1">1x Normal</option>
+                                    <option value="1.1">1.1x</option>
+                                    <option value="1.2">1.2x</option>
+                                    <option value="1.3">1.3x</option>
+                                    <option value="1.5">1.5x Fast</option>
+                                    <option value="2">2x Very Fast</option>
+                                    <option value="3">3x Super Fast</option>
+                                </select>
+                            </div>
+                            
+                            <button id="downloadBtn" class="flex items-center gap-1.5 text-xs font-bold text-white bg-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                    <audio id="audioPlayer" controls class="w-full h-10"></audio>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center gap-2 text-slate-700">
+                        <i data-lucide="history" class="w-5 h-5"></i>
+                        <h2 class="font-bold">ယခင်မှတ်တမ်းများ</h2>
+                    </div>
+                    <button id="clearHistoryBtn" class="text-xs text-red-500 font-medium hover:underline flex items-center gap-1 hidden">
+                        <i data-lucide="trash-2" class="w-3 h-3"></i> မှတ်တမ်းဖြတ်မည်
+                    </button>
+                </div>
+
+                <div id="historyList" class="space-y-3 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
+                    <div class="text-center py-12 text-slate-300 italic text-sm border-2 border-dashed border-slate-50 rounded-2xl">
+                        မှတ်တမ်းမရှိသေးပါ
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const apiKey = "AIzaSyAQTCxisX3dv3lQ_l7aT7HU3dXtdvrIX-Q"; // API Key handled by environment
+        const MAX_CHARS = 1500;
+        let history = [];
+
+        // DOM Elements
+        const textInput = document.getElementById('textInput');
+        const charCount = document.getElementById('charCount');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultBox = document.getElementById('resultBox');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const speedSelect = document.getElementById('speedSelect');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const historyList = document.getElementById('historyList');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Character Counting Logic
+        textInput.addEventListener('input', () => {
+            const length = textInput.value.length;
+            charCount.textContent = `${length} / ${MAX_CHARS} ${length >= MAX_CHARS ? '(Limit)' : ''}`;
+            
+            if (length >= MAX_CHARS) {
+                charCount.classList.replace('bg-slate-100', 'bg-red-500');
+                charCount.classList.replace('text-slate-500', 'text-white');
+                if (length > MAX_CHARS) {
+                    textInput.value = textInput.value.substring(0, MAX_CHARS);
+                }
+            } else {
+                charCount.classList.replace('bg-red-500', 'bg-slate-100');
+                charCount.classList.replace('text-white', 'text-slate-500');
+            }
+        });
+
+        // Speed Logic
+        speedSelect.addEventListener('change', () => {
+            audioPlayer.playbackRate = parseFloat(speedSelect.value);
+        });
+
+        // PCM to WAV Utility
+        function pcmToWav(pcmData, sampleRate) {
+            const buffer = new ArrayBuffer(44 + pcmData.length * 2);
+            const view = new DataView(buffer);
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+            };
+            writeString(0, 'RIFF');
+            view.setUint32(4, 32 + pcmData.length * 2, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, pcmData.length * 2, true);
+            let offset = 44;
+            for (let i = 0; i < pcmData.length; i++) {
+                view.setInt16(offset, pcmData[i], true);
+                offset += 2;
+            }
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        // Generate Voice Logic
+        generateBtn.addEventListener('click', async () => {
+            const text = textInput.value.trim();
+            if (!text) {
+                showError("ကျေးဇူးပြု၍ စာသားအရင်ရိုက်ထည့်ပါ");
+                return;
+            }
+
+            setLoading(true);
+            hideError();
+
+            const fetchTTS = async (retry = 0) => {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: `Say in Burmese naturally: ${text}` }] }],
+                            generationConfig: {
+                                responseModalities: ["AUDIO"],
+                                speechConfig: {
+                                    voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceSelect.value } }
+                                }
+                            }
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('Network error');
+                    const result = await response.json();
+                    const audioData = result.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+
+                    if (!audioData) throw new Error('Generation failed');
+
+                    const binaryString = atob(audioData.data);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+                    const pcmData = new Int16Array(bytes.buffer);
+                    const sampleRate = parseInt(audioData.mimeType.match(/rate=(\d+)/)?.[1] || "24000");
+
+                    const wavBlob = pcmToWav(pcmData, sampleRate);
+                    const url = URL.createObjectURL(wavBlob);
+
+                    displayAudio(url);
+                    addToHistory(text, url, voiceSelect.value);
+                } catch (err) {
+                    if (retry < 3) {
+                        await new Promise(r => setTimeout(r, 2000));
+                        return fetchTTS(retry + 1);
+                    }
+                    showError("အသံဖန်တီး၍မရပါ။ ခဏနေမှ ပြန်ကြိုးစားကြည့်ပါ။");
+                }
+            };
+
+            await fetchTTS();
+            setLoading(false);
+        });
+
+        function displayAudio(url) {
+            resultBox.classList.remove('hidden');
+            audioPlayer.src = url;
+            audioPlayer.playbackRate = parseFloat(speedSelect.value);
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "myanmar-ai-voice.wav";
+                a.click();
+            };
+        }
+
+        function addToHistory(text, url, voice) {
+            const item = {
+                id: Date.now(),
+                text: text.substring(0, 40) + (text.length > 40 ? "..." : ""),
+                url: url,
+                voice: voice,
+                time: new Date().toLocaleTimeString()
+            };
+            history.unshift(item);
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (history.length === 0) {
+                historyList.innerHTML = `<div class="text-center py-12 text-slate-300 italic text-sm border-2 border-dashed border-slate-50 rounded-2xl">မှတ်တမ်းမရှိသေးပါ</div>`;
+                clearHistoryBtn.classList.add('hidden');
+                return;
+            }
+
+            clearHistoryBtn.classList.remove('hidden');
+            historyList.innerHTML = history.map(item => `
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between animate-fade-in">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-700 truncate">${item.text}</p>
+                        <p class="text-[10px] text-slate-400 mt-1">${item.voice} • ${item.time}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="playFromHistory('${item.url}')" class="p-2.5 rounded-xl bg-white text-indigo-600 shadow-sm border border-slate-100 hover:border-indigo-200 transition-all">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                        </button>
+                        <button onclick="downloadFromHistory('${item.url}')" class="p-2.5 rounded-xl bg-white text-emerald-600 shadow-sm border border-slate-100 hover:border-emerald-200 transition-all">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        window.playFromHistory = (url) => displayAudio(url);
+        window.downloadFromHistory = (url) => {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "history-voice.wav";
+            a.click();
+        };
+
+        clearHistoryBtn.onclick = () => {
+            history = [];
+            renderHistory();
+        };
+
+        function setLoading(loading) {
+            generateBtn.disabled = loading;
+            generateBtn.innerHTML = loading 
+                ? `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>ဖန်တီးနေသည်...</span>`
+                : `<i data-lucide="play" class="w-5 h-5 fill-current"></i><span>အသံဖန်တီးမည်</span>`;
+            lucide.createIcons();
+        }
+
+        function showError(msg) {
+            errorText.textContent = msg;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
